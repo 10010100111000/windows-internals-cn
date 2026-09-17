@@ -1,0 +1,77 @@
+---
+title: "Reparse points & symlinks"
+---
+
+intermediate
+
+# Reparse points & symlinks
+
+Junctions, symlinks, and filter-driver namespaces that redirect paths.
+
+## Guided paths in this branch
+
+Follow a short sequence step by step. Each path links to the first topic; use Read next on each page to continue.
+
+### Storage path
+
+Volumes, NTFS, cache, and reparse points.
+
+Step 5 of 5 in this path
+
+[1. Storage & file systems](/explore/storage?path=storage-path)[2. Disks, partitions, and volumes](/explore/storage/volumes?path=storage-path)[3. File systems](/explore/storage/filesystems?path=storage-path)[4. Cache Manager](/explore/storage/cache?path=storage-path)[5. Reparse points & symlinks](/explore/storage/reparse-points?path=storage-path)
+
+[Follow this path](/explore/storage?path=storage-path)
+
+## Official Microsoft docs
+
+Closest official references related to this topic on Microsoft Learn.
+
+[
+
+Microsoft Learn
+
+Reparse points
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/fileio/reparse-points)[
+
+Microsoft Learn
+
+Symbolic link effects on file systems
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/fileio/symbolic-link-effects-on-file-systems)
+
+## Why it matters
+
+Cloud sync, deduplication, and directory redirection rely on reparse points. Misunderstanding them breaks path forensics.
+
+## Mental model
+
+A reparse point tags a directory or file so the I/O manager invokes a filter to interpret the path.
+
+## How it works
+
+1.  1The file system stores a reparse tag and optional data on a file object.
+2.  2Opens traverse the tag; a filter or the file system resolves the target.
+3.  3Junctions, symlinks, and OneDrive-style placeholders all use this mechanism differently.
+
+## Key terms
+
+Reparse point
+
+A file system object marked for special interpretation.
+
+Mount point
+
+A junction that redirects a directory to another volume path.
+
+## dir shows &lt;SYMLINK&gt; or &lt;JUNCTION&gt;
+
+These are reparse-backed redirects. The real content may live on another path or volume.
+
+## Common misconception
+
+Symlinks and hard links are not the same. Reparse-backed symlinks differ from hard link directory entries.
