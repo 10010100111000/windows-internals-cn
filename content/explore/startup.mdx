@@ -1,0 +1,101 @@
+---
+title: "启动与关机"
+---
+
+beginner
+
+# 启动与关机
+
+Windows 如何从固件阶段进入交互式会话，以及它如何安全地关闭系统。
+
+## 相关实验
+
+该领域的动手练习 — 在浏览器中或在 Windows 机器上。
+
+[
+
+进程树资源管理器
+
+遍历从 System 到 Explorer 及用户应用程序的示例父/子进程树。
+
+打开实验](/tools/process-tree)
+
+[查看所有实验](/tools)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Windows 启动问题故障排除
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/troubleshoot/windows-client/performance/windows-boot-issues-troubleshooting)[
+
+Microsoft Learn
+
+Winlogon 的职责
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/secauthn/responsibilities-of-winlogon)
+
+## 为什么它很重要
+
+启动阶段几乎是每一个 Windows 子系统首次可见的地方：固件、加载器、驱动程序、会话、服务以及用户登录。
+
+## 思维模型
+
+启动并不是从固件到桌面的简单一跃。它是在加载器、内核初始化、系统进程、服务和交互式 shell 之间的分阶段交接过程。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Processwinlogon.exe
+    
+    登录与会话过渡
+    
+*   Processuserinit.exe
+    
+    用户初始化 — 启动 shell
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   启动阶段：固件 → 启动管理器 (boot manager) → 内核初始化 → SMSS → Winlogon → Explorer。
+*   安全模式 (Safe mode) 通过 BCD 选项加载最小的驱动和服务集合。
+
+## 工作原理
+
+1.  1固件和启动组件准备好计算机硬件以及 Windows 加载器。
+2.  2内核初始化核心管理器以及对启动至关重要的驱动程序。
+3.  3系统进程、服务、Winlogon 和 shell 共同唤起交互式会话。
+
+## 关键术语
+
+Winload
+
+负责准备操作系统内核和启动环境的 Windows 加载器。
+
+SMSS
+
+会话管理器子系统 (Session Manager Subsystem)；最早期的用户模式进程之一。
+
+Winlogon
+
+负责安全登录和启动用户会话的进程。
+
+## 为什么驱动可以在桌面出现前破坏启动
+
+某些组件在大多数用户模式存在之前就已经加载，因此早期的故障可以阻止后续阶段的启动。
+
+## 常见误区
+
+桌面并不是 Windows 的起点。当你看到桌面时，许多关键的子系统早已经被初始化完成了。

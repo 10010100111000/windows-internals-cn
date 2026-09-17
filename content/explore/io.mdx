@@ -1,0 +1,97 @@
+---
+title: "I/O 系统"
+---
+
+beginner
+
+# I/O 系统
+
+Windows 如何将 API 请求转换为 IRP、驱动栈工作以及设备操作。
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### I/O 与驱动
+
+从 I/O Manager 和 IRP，到驱动栈以及 PnP 电源管理。
+
+该路径共 5 步，当前第 1 步
+
+[1. I/O 系统](/explore/io?path=io-path)[2. I/O Manager](/explore/io/manager?path=io-path)[3. 驱动与设备栈](/explore/io/drivers?path=io-path)[4. 即插即用与电源管理](/explore/io/pnp-power?path=io-path)[5. 文件系统](/explore/storage/filesystems?path=io-path)
+
+[跟随此学习路径](/explore/io?path=io-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Windows kernel-mode I/O manager
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/windows-kernel-mode-i-o-manager)[
+
+Microsoft Learn
+
+I/O request packets
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-hardware/drivers/gettingstarted/i-o-request-packets)
+
+## 为什么它很重要
+
+I/O 系统是用户意图与设备、驱动交汇的地方。如果你想要理解文件、磁盘、键盘或者网络，最终都需要掌握 I/O 流水线。
+
+## 思维模型
+
+Windows I/O 是一套路由请求系统：应用发起任务请求，I/O Manager 将请求封装，分层驱动协同完成该请求。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   ComponentI/O Manager
+    
+    IRP 的路由与完成
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   IRPs 可以同步完成、通过回调挂起，或者向下转发至驱动栈。
+*   I/O completion ports 为高并发服务器提供可伸缩的线程池。
+
+## 工作原理
+
+1.  1用户态 API 调用进入内核，转换为 I/O request packet (IRP)。
+2.  2I/O Manager 将 IRP 下发至一个或多个设备栈。
+3.  3驱动根据自身角色，处理、转换、转发或者完成该请求。
+
+## 关键术语
+
+IRP
+
+I/O Request Packet；用于表示一次 I/O 操作的核心内核结构体。
+
+Driver stack
+
+有序驱动集合，协同处理设备请求。
+
+Device object
+
+I/O 系统内部代表一个设备实例的内核对象。
+
+## 应用程序打开文件
+
+一次简单的文件打开操作，在用户态看起来只是一次 API 调用，但 Windows 会将其转换为 I/O 请求，该请求需要穿越多层组件，之后文件系统或设备才会响应。
+
+## 常见误区
+
+驱动并不总是请求的最终持有者。很多请求在完成前会经过多个驱动。

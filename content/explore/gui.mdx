@@ -1,0 +1,113 @@
+---
+title: "GUI 与窗口管理"
+---
+
+beginner
+
+# GUI 与窗口管理
+
+会话 (Sessions)、桌面 (desktops)、USER/GDI 对象，以及在核心内核之上的 Windows 专属 UI 机制。
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### GUI 与会话 UI
+
+了解会话、窗口站 (window stations)、桌面、USER/GDI 对象，以及在 shell 背后的 CSRSS/Win32k 基础管道。
+
+该路径共 4 步，当前第 1 步
+
+[1. GUI 与窗口管理](/explore/gui?path=gui-path)[2. 窗口站与桌面](/explore/gui/window-stations?path=gui-path)[3. USER 与 GDI 对象](/explore/gui/user-gdi?path=gui-path)[4. CSRSS, Win32k, 与会话 UI 管道](/explore/gui/csrss-win32k?path=gui-path)
+
+[跟随此学习路径](/explore/gui?path=gui-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+关于窗口站和桌面
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/winstation/about-window-stations-and-desktops)[
+
+Microsoft Learn
+
+User 对象
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/sysinfo/user-objects)
+
+## 为什么它很重要
+
+这是大多数人每天都在接触、但却很少能准确理清的 Windows 组成部分。它解释了为什么一个已登录的会话、一个桌面、一个窗口和 shell 相互关联却又并非同一种事物。
+
+## 思维模型
+
+GUI 栈不仅仅是 'Explorer'。Windows 构建交互式会话，将它们附加到窗口站和桌面，然后通过专用的子系统来管理窗口、菜单、绘图和输入。
+
+## 示意图
+
+点击高亮区域了解该层级并深入阅读相关内容。
+
+GUI: 从会话到桌面Windows 构建一个交互式会话，然后将其附加到一个包含多个桌面的窗口站上。Logon contextInteractive sessionWinsta0Window stationWinlogon / DefaultDesktops + USER/GDI
+
+交互式会话
+
+一次登录会创建一个拥有自己核心 UI 管道的交互式会话。这里是 Winlogon、Explorer 以及各会话独立 GUI 状态生效的地方。
+
+[打开相关主题](/explore/startup/session-manager)
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Processexplorer.exe
+    
+    Shell 与桌面
+    
+*   Componentwin32k.sys / win32kbase.sys
+    
+    内核窗口管理
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   GDI 绘图可以通过 DXGI/DWM 桌面应用组合实现硬件加速。
+*   会话断开 (Session disconnect) 会保持进程存活，同时释放交互式桌面。
+
+## 工作原理
+
+1.  1创建一个用户会话并将其连接到一个交互式窗口站。
+2.  2该窗口站包含如 Winlogon 和 Default 这样的桌面。
+3.  3会话中的进程创建 USER 和 GDI 对象，用于表示窗口、菜单、光标、字体和绘图状态。
+
+## 关键术语
+
+Window station
+
+一种可安全控制的对象，包含桌面以及共享的 GUI 资源，如剪贴板和原子表 (atom table)。
+
+Desktop
+
+一个逻辑的显示和输入表面，包含窗口、菜单和钩子 (hooks)。
+
+USER/GDI
+
+核心 GUI 对象家族，用于 Windows 中的界面元素和图形资源。
+
+## 为什么 UAC 或 Ctrl+Alt+Del 会改变你看到的画面
+
+Windows 可以在同一个会话内切换可见的桌面，这就是为什么安全登录或用户同意界面感觉像是进入了一个独立的环境，而不是仅仅弹出了一个普通窗口。
+
+## 常见误区
+
+桌面并不是 shell，shell 也不等同于整个 GUI 系统。Explorer 建立在更底层的会话、窗口管理和图形基础架构之上。

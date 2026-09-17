@@ -1,0 +1,97 @@
+---
+title: "存储与文件系统"
+---
+
+beginner
+
+# 存储与文件系统
+
+磁盘、卷、缓存以及让持久化数据可用的文件系统层。
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### 存储路径
+
+Volumes、NTFS、缓存以及重解析点（reparse points）。
+
+该路径共 5 步，当前第 1 步
+
+[1. 存储与文件系统](/explore/storage?path=storage-path)[2. 磁盘、分区与卷](/explore/storage/volumes?path=storage-path)[3. 文件系统](/explore/storage/filesystems?path=storage-path)[4. Cache Manager](/explore/storage/cache?path=storage-path)[5. 重解析点与符号链接](/explore/storage/reparse-points?path=storage-path)
+
+[跟随此学习路径](/explore/storage?path=storage-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Storage device stacks, storage volumes, and file system stacks
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-hardware/drivers/ifs/storage-device-stacks--storage-volumes--and-file-system-stacks)[
+
+Microsoft Learn
+
+NTFS overview
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-server/storage/file-server/ntfs-overview)
+
+## 为什么它很重要
+
+Windows 存储绝不仅是“一个磁盘和一个文件夹”。Volumes、文件系统、缓存、加密以及命名空间转换共同塑造了持久化的工作方式。
+
+## 思维模型
+
+存储是分层的：硬件或虚拟磁盘 -> 分区/volume -> 文件系统 -> 缓存 -> 应用程序可见的路径和句柄。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Componentvolmgr / disk class
+    
+    Volume 和磁盘栈
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   Volume managers 呈现驱动器号；分区管理器位于它们下方的栈中。
+*   NTFS 在 MFT 中存储元数据；USN journal 跟踪文件变更以便于索引/备份。
+
+## 工作原理
+
+1.  1下层驱动向操作系统暴露磁盘和 volumes。
+2.  2文件系统将磁盘上的结构解释为目录、文件和元数据。
+3.  3Cache manager 和内存管理器协同工作，以减少昂贵的磁盘访问。
+
+## 关键术语
+
+Volume
+
+呈现给操作系统用于 I/O 的逻辑存储单元。
+
+NTFS
+
+Windows 主要的通用文件系统。
+
+Cache Manager
+
+通过缓存映射加速文件 I/O 的子系统。
+
+## 应用程序打开文档
+
+在你输入的路径返回字节给应用程序之前，它早已经过了命名空间和文件系统结构的映射。
+
+## 常见误区
+
+驱动器号并不是磁盘。它只是在底层存储栈之上的一个命名空间视图。

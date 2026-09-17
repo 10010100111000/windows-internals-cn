@@ -1,0 +1,146 @@
+---
+title: "网络"
+---
+
+beginner[打开实验 →](/tools/dns)
+
+# 网络
+
+Windows 如何将数据通过 TCP/IP 协议栈、过滤层和端点 API 进行传输。
+
+## 30秒速览
+
+应用程序使用 Winsock；内核通过 AFD 和 tcpip.sys 路由 sockets，其下方是过滤层 (WFP/BFE) 和 NDIS 适配器。
+
+## 你理解这个如果…
+
+*   ✓你可以说出从 getaddrinfo 到网络线路上的 TCP 报文段的路径。
+*   ✓你知道为什么 DNS Client 是一个系统服务，而不是每个应用程序专属的。
+
+## 相关实验
+
+该领域的动手练习 — 在浏览器中或在 Windows 机器上。
+
+[
+
+DNS 解析实验
+
+从浏览器 (DNS-over-HTTPS) 解析名称，并与 Windows DNS 客户端的行为进行比较。
+
+打开实验](/tools/dns)
+
+[查看所有实验](/tools)
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### 网络协议栈概览
+
+跟踪一个连接从 Winsock 和 DNS 到 TCP/IP、过滤层 (WFP/BFE)，一直下到 NDIS 和网卡 (NIC) 的过程。
+
+该路径共 7 步，当前第 1 步
+
+[1. 网络](/explore/networking?path=networking-path)[2. 名称解析与 DNS 客户端](/explore/networking/dns-client?path=networking-path)[3. Winsock、AFD 与内核边界](/explore/networking/winsock-afd?path=networking-path)[4. TCP/IP 协议栈](/explore/networking/tcpip?path=networking-path)[5. 过滤与防火墙](/explore/networking/filtering?path=networking-path)[6. WFP 与 BFE（深度剖析）](/explore/networking/wfp-bfe?path=networking-path)[7. NDIS 与网络适配器](/explore/networking/ndis?path=networking-path)
+
+[跟随此学习路径](/explore/networking?path=networking-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Windows Sockets 2
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/winsock/windows-sockets-start-page-2)[
+
+Microsoft Learn
+
+关于 Windows Filtering Platform
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/fwp/about-windows-filtering-platform)
+
+## 为什么它很重要
+
+现代 Windows 高度依赖网络：身份验证、更新、域成员身份、云应用以及远程管理全都依赖于网络协议栈。
+
+## 思维模型
+
+网络是另一条分层流水线：顶端是应用程序 API，中间是协议栈，底端是适配器和驱动。
+
+## 示意图
+
+点击高亮区域了解该层级并深入阅读相关内容。
+
+Windows 网络协议栈Apps / WinsockAFD / WSKTCP/IP + DNSWFP / BFENDIS / NIC
+
+Application / Winsock
+
+用户模式应用使用 Winsock。系统组件可以使用 Winsock Kernel (WSK) 来避免额外的用户/内核态转换。
+
+[打开相关主题](/explore/networking/winsock-afd)
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Filetcpip.sys
+    
+    TCP/IP 协议驱动
+    
+*   Fileafd.sys
+    
+    Winsock 的辅助功能驱动 (Ancillary Function Driver)
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   双栈 (dual-stack) 共享接口；loopback 和 vSwitch 端口是特殊情况。
+*   WFP callouts 可以在多个层级进行检查，而无需替换 tcpip.sys。
+
+## 工作原理
+
+1.  1应用程序使用 sockets 和更高层的 API 请求网络通信。
+2.  2TCP/IP 协议栈将这些请求转化为协议操作。
+3.  3下层组件和驱动最终通过物理或虚拟接口传输数据包。
+
+## 关键术语
+
+Socket
+
+用于网络通信的端点抽象。
+
+TCP/IP 协议栈
+
+Windows 中用于 Internet 协议的核心网络实现。
+
+WFP
+
+Windows Filtering Platform，用于检查和控制网络流量。
+
+## 连接到一个网站
+
+一个看似简单的浏览器操作，实际上跨越了 DNS、sockets、TCP 状态、过滤层和适配器驱动。
+
+## 常见误区
+
+网络并非独立于 Windows 的其余部分；安全、服务、驱动以及用户态 API 全都参与其中。
+
+## 引导练习
+
+使用此主题从理论走向实践。
+
+[打开实验](/tools/dns)
+
+*   1在 DNS 实验中解析一个主机名 (A 和 AAAA)，注意 TTL 和延迟。
+*   2阅读实验右侧的 Windows 客户端路径清单。
+*   3在 Windows 上，运行 Resolve-DnsName 和 ipconfig /displaydns，并将其与浏览器路径进行比较。
