@@ -1,19 +1,16 @@
+import { Topic } from '@/lib/types';
 import React from 'react';
-import type { Metadata } from 'next';
 import Link from 'next/link';
-import {
-  flattenTopics,
-  findTopicBySlug,
-  getTopicBreadcrumb,
-  getNextPrevTopics,
-} from '@/data/topics';
-import type { Topic } from '@/lib/types';
+import type { Metadata } from 'next';
+import { findTopicBySlug, flattenTopics, getTopicBreadcrumb, getNextPrevTopics } from '@/data/topics';
 import { TopicSidebar } from '@/components/TopicSidebar';
 import { TopicCard } from '@/components/TopicCard';
 import { DepthChip } from '@/components/DepthChip';
 import { PrevNextNav } from '@/components/PrevNextNav';
 import { ArchitectureDiagram } from '@/components/ArchitectureDiagram';
 import { ChevronRight, Home, Layers, FlaskConical, Hash } from 'lucide-react';
+import { MDXRemote } from 'next-mdx-remote/rsc';
+import { getTopicMdx } from '@/lib/mdx';
 
 interface PageProps {
   params: {
@@ -42,7 +39,7 @@ export function generateMetadata({ params }: PageProps): Metadata {
   };
 }
 
-export default function TopicDetailPage({ params }: PageProps) {
+export default async function TopicDetailPage({ params }: PageProps) {
   const slug = Array.isArray(params.slug) ? params.slug.join('/') : params.slug;
   const topic = findTopicBySlug(slug);
 
@@ -67,6 +64,7 @@ export default function TopicDetailPage({ params }: PageProps) {
 
   const breadcrumbs = getTopicBreadcrumb(slug);
   const { prev, next } = getNextPrevTopics(slug);
+  const mdxData = await getTopicMdx(slug);
 
   const relatedTopics = topic.relatedSlugs
     ? topic.relatedSlugs
@@ -84,10 +82,7 @@ export default function TopicDetailPage({ params }: PageProps) {
       {/* 右侧文章内容区 */}
       <article className="flex-1 min-w-0 w-full space-y-6">
         {/* 面包屑导航 */}
-        <nav
-          aria-label="面包屑导航"
-          className="flex items-center gap-1.5 text-xs text-[var(--muted)] flex-wrap"
-        >
+        <nav aria-label="面包屑导航" className="flex items-center gap-1.5 text-xs text-[var(--muted)] flex-wrap">
           <Link href="/" className="hover:text-[var(--text)] transition-colors flex items-center gap-1">
             <Home className="w-3.5 h-3.5" />
             <span>首页</span>
@@ -131,7 +126,6 @@ export default function TopicDetailPage({ params }: PageProps) {
           <p className="text-base sm:text-lg text-[var(--text-soft)] leading-relaxed">
             {topic.summary}
           </p>
-
           {topic.keywords && topic.keywords.length > 0 && (
             <div className="mt-4 pt-4 border-t border-[var(--border)]/70 flex flex-wrap items-center gap-2">
               <span className="text-xs text-[var(--muted)] flex items-center gap-1">
@@ -146,6 +140,17 @@ export default function TopicDetailPage({ params }: PageProps) {
             </div>
           )}
         </div>
+
+        {/* MDX 正文内容渲染 */}
+        {mdxData ? (
+          <section className="article-body my-8 surface-panel p-6 sm:p-8 rounded-2xl border border-[var(--border)]">
+            <MDXRemote source={mdxData.content} />
+          </section>
+        ) : (
+          <div className="my-8 surface-panel p-6 sm:p-8 rounded-2xl border border-dashed border-[var(--border)]/40 text-center">
+            <p className="text-[var(--muted)]">（本文正文内容尚在建设中，敬请期待...）</p>
+          </div>
+        )}
 
         {/* 交互式架构图 */}
         {topic.hasSchematic && (
