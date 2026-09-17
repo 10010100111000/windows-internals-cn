@@ -1,0 +1,134 @@
+---
+title: "Processes & threads"
+---
+
+beginnerStart Here Step 2[Open lab →](/tools/process-tree)
+
+# Processes & threads
+
+Windows 如何表征任务、隔离应用程序以及调度执行。
+
+## In 30 seconds
+
+进程是线程、句柄与虚拟内存的容器；内核通过 EPROCESS 结构体跟踪进程，而用户态工具看到的是 PID 和镜像名称。
+
+## You understand this if…
+
+*   ✓你可以解释为什么 csrss 和 smss 存在于会话边界。
+*   ✓你清楚进程句柄表与内核对象之间的区别。
+
+## Related labs
+
+该主题的实操练习 — 可在浏览器内或 Windows 主机上完成。
+
+[
+
+Process tree explorer
+
+遍历从 System 进程到资源管理器以及用户应用程序的父子进程样例树。
+
+Open lab](/tools/process-tree)
+
+[View all labs](/tools)
+
+## Official Microsoft docs
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+About processes and threads
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/procthread/about-processes-and-threads)[
+
+Microsoft Learn
+
+Windows kernel-mode process and thread manager
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-hardware/drivers/kernel/windows-kernel-mode-process-and-thread-manager)
+
+## Why it matters
+
+进程和线程是你在 Windows 上所有操作的运行时载体。它们直接关联句柄、调度、安全与调试。
+
+## Mental model
+
+进程是身份与资源的容器；线程才是真正执行指令的执行路径。
+
+## Schematic
+
+点击高亮区域了解对应层级，并深入浏览进程树。
+
+Process treeSystemsvchostexplorer.exe
+
+System
+
+System 进程承载核心内核线程，它并非普通桌面应用程序。
+
+## Windows building blocks
+
+你可以在任务管理器、资源管理器或文档中找到的名称与路径。
+
+*   ProcessSystem
+    
+    内核/系统进程（不等同于 'Idle'）
+    
+*   Processcsrss.exe
+    
+    每个会话对应的子系统进程
+    
+*   Processsmss.exe
+    
+    会话管理器 — 负责创建会话
+    
+
+## Go one level deeper
+
+供读者在进入子主题前阅读的补充精确细节。
+
+*   EPROCESS/KPROCESS（内核态）与 PEB/TEB（用户态）是对同一个执行实体的互补描述。
+*   大多数工具展示的是用户态视图；内核调试器才能查看内核结构体。
+
+## How it works
+
+1.  1进程会获得地址空间、令牌、句柄表以及记账管理结构体。
+2.  2进程内的线程由调度器独立调度。
+3.  3内核对象让进程能够安全地协同工作并引用共享资源。
+
+## Key terms
+
+EPROCESS
+
+用于表示进程的内核结构体。
+
+ETHREAD
+
+用于表示线程的内核结构体。
+
+Handle
+
+通过进程句柄表持有的、指向内核对象的间接引用。
+
+## Opening Task Manager
+
+任务管理器展示友好的进程名称，但 Windows 内部会维护更丰富的结构体，例如令牌、会话、优先级类以及句柄表。
+
+## Common misconception
+
+进程不等于任务管理器里单独一行条目。它是承载多个线程、对象与策略规则的容器。
+
+## Guided exercise
+
+借助本主题，从理论走向实操。
+
+[Open lab](/tools/process-tree)
+
+*   1打开进程树实验，从 System 进程一路点击到某个用户应用程序。
+*   2留意哪些组件是会话专属，哪些是整机范围（如 services.exe）。
+*   3在 Windows 中，使用 Process Explorer 进程树或 Get-CimInstance Win32_Process 进行对比。

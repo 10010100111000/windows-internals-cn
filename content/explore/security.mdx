@@ -1,0 +1,153 @@
+---
+title: "安全"
+---
+
+beginnerStart Here Step 7[打开实验 →](/tools/security-acl)
+
+# 安全
+
+访问令牌、特权、完整性，以及 Windows 如何决定谁可以做什么。
+
+## 30秒速览
+
+每个访问决定都结合了你是谁（token），对象允许什么（DACL），以及可选的策略（integrity, AppContainer, privileges）。
+
+## 你理解这个如果…
+
+*   ✓你可以读取一个简单的 SDDL 字符串（O, G, D, S 前缀）。
+*   ✓你知道何时 UAC 过滤管理员令牌，何时提升它。
+
+## 相关实验
+
+该领域的动手练习 — 在浏览器中或在 Windows 机器上。
+
+[
+
+ACL & SDDL 实验
+
+粘贴 SDDL 或选择样本，然后以平实的语言查看 owner, DACL, SACL 和 ACE 的含义。
+
+打开实验](/tools/security-acl)[
+
+访问检查模拟器
+
+分步执行简化的 DACL vs token 决定 — 拥有与真实算法相同的规则，较少的边界情况。
+
+打开实验](/tools/access-check)
+
+[查看所有实验](/tools)
+
+## 这个分支中的引导路径
+
+逐步遵循简短序列。每条路径链接到第一个主题；在每个页面上使用“阅读下一篇”继续。
+
+### 安全深度剖析
+
+从身份（tokens）到对象策略（DACL/SACL），通过内核访问检查（SRM），以 UAC 和完整性边界结束。
+
+本路径的第1步，共5步
+
+[1. 安全](/explore/security?path=security-path)[2. 访问令牌](/explore/security/token?path=security-path)[3. 安全描述符和 ACL](/explore/security/descriptors-acls?path=security-path)[4. 访问检查和安全引用监视器](/explore/security/access-checks-srm?path=security-path)[5. UAC、完整性级别和安全桌面](/explore/security/uac-mic?path=security-path)
+
+[按照此路径](/explore/security?path=security-path)
+
+## 官方 Microsoft 文档
+
+在 Microsoft Learn 上与该主题最相关的官方参考。
+
+[
+
+Microsoft Learn
+
+访问控制模型的各部分
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/secauthz/access-control-components)[
+
+Microsoft Learn
+
+强制完整性控制
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/secauthz/mandatory-integrity-control)
+
+## 为什么这很重要
+
+Windows 安全内幕无处不在：进程创建、文件访问、服务、UAC 提示，以及许多事件日志记录。
+
+## 心智模型
+
+Windows 中的安全决定附在身份和对象上。Tokens 描述你是谁；描述符描述对象允许什么。
+
+## 示意图
+
+单击突出显示的区域以了解层并深入树状结构。
+
+Security access checkEvery access attempt: token context meets object policy in kernel mode.Access tokenSIDs, groups, privilegesSRMSeAccessCheckDescriptorDACL / SACLAllow / Deny (+ optional audit via SACL)
+
+Access token
+
+调用者身份：用户 SIDs, 组, privileges, 和 integrity level。每个进程和模拟线程都携带这个上下文。
+
+[打开相关主题](/explore/security/token)
+
+## Windows 构建块
+
+您可以在任务管理器、资源管理器或文档中查找的名称和路径。
+
+*   Processlsass.exe
+    
+    本地安全权威主机进程
+    
+*   Filelsasrv.dll
+    
+    LSA 服务器接口
+    
+
+## 深入一层
+
+为在打开子主题前需要更多精确细节的读者提供的额外细节。
+
+*   授权结合了 token 身份、对象 DACL/SACL、privileges 和 integrity 策略。
+*   当配置了 SACL 审计时，审计记录会落在安全事件日志中。
+
+## 它是如何工作的
+
+1.  1一个 token 携带 SIDs, privileges, 和 integrity 上下文。
+2.  2对象携带描述允许的访问的安全描述符。
+3.  3内核在授予访问权限之前检查 token 和对象之间的关系。
+
+## 关键术语
+
+SID
+
+表示用户、组或主体的安全标识符。
+
+Privilege
+
+token 内的一种特殊能力，可以启用敏感操作。
+
+Integrity level
+
+Windows 使用的一种机制，用于限制跨信任边界的交互。
+
+## 为什么管理员成员身份不是全部
+
+用户可能属于管理员组，但在提升发生前，仍以经过过滤的 token 运行。
+
+## 常见误解
+
+安全性不仅仅是文件权限。Tokens, privileges, integrity, 和对象检查都需要放在一起考量。
+
+## 引导练习
+
+使用此主题从理论走向实践。
+
+[打开实验](/tools/security-acl)
+
+*   1打开 ACL & SDDL 实验并加载一个示例安全描述符。
+*   2阅读解析的 Owner, DACL, 和 ACE 表 — 注意 Allow vs Deny 信任者。
+*   3以相同的心智模型打开访问检查模拟器：token SIDs vs DACL 顺序。
+*   4在 Windows 上，在测试文件上运行 icacls 并将输出与 SDDL 样本进行比较。
