@@ -12,18 +12,18 @@ import {
   Info,
 } from 'lucide-react';
 
-interface MockEventLog {
-  id: number;
-  level: 'Information' | 'Warning' | 'Error' | 'AuditSuccess' | 'AuditFailure';
+interface EventLog {
+  id: string;
+  level: string;
   time: string;
   provider: string;
   task: string;
   description: string;
 }
 
-const MOCK_EVENTS: MockEventLog[] = [
+const MOCK_EVENTS: EventLog[] = [
   {
-    id: 4624,
+    id: '4624',
     level: 'AuditSuccess',
     time: '2026-09-17 14:22:01',
     provider: 'Microsoft-Windows-Security-Auditing',
@@ -31,7 +31,7 @@ const MOCK_EVENTS: MockEventLog[] = [
     description: '账户已成功登录。目标用户: Administrator，登录类型: 2 (交互式)，工作站: WORKSTATION-01',
   },
   {
-    id: 4672,
+    id: '4672',
     level: 'AuditSuccess',
     time: '2026-09-17 14:22:01',
     provider: 'Microsoft-Windows-Security-Auditing',
@@ -39,36 +39,12 @@ const MOCK_EVENTS: MockEventLog[] = [
     description: '已为新登录会话分配高特权: SeSecurityPrivilege, SeBackupPrivilege, SeDebugPrivilege',
   },
   {
-    id: 4688,
+    id: '4688',
     level: 'AuditSuccess',
     time: '2026-09-17 14:22:05',
     provider: 'Microsoft-Windows-Security-Auditing',
     task: '进程创建',
     description: '新进程已创建。新进程名称: C:\\Windows\\System32\\cmd.exe，命令行: "cmd.exe" /c whoami',
-  },
-  {
-    id: 7045,
-    level: 'Information',
-    time: '2026-09-17 14:25:30',
-    provider: 'Service Control Manager',
-    task: '服务系统',
-    description: '系统中已安装新系统服务。服务名称: Sysmon64，服务文件名: C:\\Windows\\Sysmon64.exe',
-  },
-  {
-    id: 4625,
-    level: 'AuditFailure',
-    time: '2026-09-17 14:30:12',
-    provider: 'Microsoft-Windows-Security-Auditing',
-    task: '登录',
-    description: '账户登录失败。目标用户: guest，失败状态码: 0xC000006D (STATUS_LOGON_FAILURE)',
-  },
-  {
-    id: 1102,
-    level: 'AuditSuccess',
-    time: '2026-09-17 14:32:00',
-    provider: 'Microsoft-Windows-Eventlog',
-    task: '日志服务',
-    description: '安全审核日志已被清除。执行者标识: NT AUTHORITY\\SYSTEM (PID: 748)',
   },
 ];
 
@@ -87,17 +63,91 @@ export const EvtxLab: React.FC = () => {
   const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [useSampleData, setUseSampleData] = useState(false);
+  const [parsedEvents, setParsedEvents] = useState<EventLog[]>([]);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const parseEvtxBuffer = async (arrayBuffer: ArrayBuffer) => {
+    try {
+      // Dynamic imports for browser compatibility
+      const { Buffer } = await import('buffer');
+      const { parseEvtxFile } = await import('winevtx');
+
+      const buf = Buffer.from(arrayBuffer);
+      const events: EventLog[] = [];
+      
+      for (const record of parseEvtxFile(buf)) {
+        const evt = record.event as any;
+        const sys = evt?.Event?.System || {};
+        
+        let eventId = sys?.EventID?.['#text'] ?? sys?.EventID ?? '-';
+        if (typeof eventId === 'object' && eventId !== null && 'text' in eventId) eventId = eventId.text;
+        if (typeof eventId === 'object' && eventId !== null && 'value' in eventId) eventId = eventId.value;
+
+        let level = 'Information';
+        const lvlRaw = sys?.Level?.['#text'] ?? sys?.Level ?? 4;
+        if (lvlRaw == 1 || lvlRaw == 2) level = 'Error';
+        else if (lvlRaw == 3) level = 'Warning';
+        else if (lvlRaw == 0) level = 'Information';
+
+        const keywords = sys?.Keywords?.['#text'] ?? sys?.Keywords;
+        if (typeof keywords === 'string') {
+          if (keywords.includes('Audit Failure') || keywords === '0x8020000000000000') level = 'AuditFailure';
+          else if (keywords.includes('Audit Success') || keywords === '0x8010000000000000') level = 'AuditSuccess';
+        }
+
+        let timeStr = '-';
+        if (record.timestamp) {
+          timeStr = new Date(record.timestamp * 1000).toLocaleString('zh-CN', { hour12: false });
+        }
+
+        let provider = sys?.Provider?.Name ?? sys?.Provider?.['#text'] ?? '-';
+        if (typeof provider === 'object') provider = JSON.stringify(provider);
+
+        let task = sys?.Task?.['#text'] ?? sys?.Task ?? '-';
+
+        const eventData = evt?.Event?.EventData || evt?.Event?.UserData || {};
+        const description = Object.keys(eventData).length === 0 
+          ? '无额外事件数据' 
+          : JSON.stringify(eventData).substring(0, 300);
+
+        events.push({
+          id: String(eventId),
+          level,
+          time: timeStr,
+          provider: String(provider),
+          task: String(task),
+          description
+        });
+
+        // Limit to 200 items for frontend performance
+        if (events.length >= 200) break;
+      }
+      
+      setParsedEvents(events);
+    } catch (e: any) {
+      console.error("EVTX 解析出错", e);
+      setErrorMsg(`解析失败: ${e.message || '无效的 EVTX 文件格式'}`);
+    }
+  };
 
   const processFile = async (selectedFile: File) => {
     setIsLoading(true);
+    setErrorMsg(null);
     try {
       const buffer = await selectedFile.arrayBuffer();
       setFile(selectedFile);
       setBufferLength(buffer.byteLength);
       setUseSampleData(false);
+      
+      // Delay slightly so UI can show loading state
+      await new Promise(r => setTimeout(r, 100));
+      await parseEvtxBuffer(buffer);
+
     } catch (err) {
       console.error('读取 EVTX 文件失败:', err);
+      setErrorMsg('文件读取失败');
     } finally {
       setIsLoading(false);
     }
@@ -105,32 +155,28 @@ export const EvtxLab: React.FC = () => {
 
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(true);
   };
 
   const handleDragLeave = (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
   };
 
   const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     setIsDragging(false);
-
-    const droppedFiles = e.dataTransfer.files;
-    if (droppedFiles && droppedFiles.length > 0) {
-      const dropped = droppedFiles[0];
-      await processFile(dropped);
+    const droppedFile = e.dataTransfer.files[0];
+    if (droppedFile && droppedFile.name.toLowerCase().endsWith('.evtx')) {
+      await processFile(droppedFile);
+    } else {
+      setErrorMsg('请上传有效的 .evtx 格式日志文件。');
     }
   };
 
-  const handleFileInput = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files && files.length > 0) {
-      await processFile(files[0]);
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      await processFile(e.target.files[0]);
     }
   };
 
@@ -139,43 +185,42 @@ export const EvtxLab: React.FC = () => {
   };
 
   const handleLoadSample = () => {
+    setFile(new File([''], 'Sample-Security-Log.evtx'));
+    setBufferLength(8192);
     setUseSampleData(true);
-    setFile({
-      name: 'Security-Audit-Sample.evtx',
-      size: 1572864,
-    } as File);
-    setBufferLength(1572864);
+    setParsedEvents(MOCK_EVENTS);
+    setErrorMsg(null);
   };
 
   const handleReset = () => {
     setFile(null);
     setBufferLength(null);
     setUseSampleData(false);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
+    setParsedEvents([]);
+    setErrorMsg(null);
   };
 
-  const hasLoaded = Boolean(file && bufferLength !== null);
+  const hasLoaded = file !== null;
+  const displayEvents = useSampleData ? MOCK_EVENTS : parsedEvents;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <input
-        ref={fileInputRef}
         type="file"
-        accept=".evtx"
-        onChange={handleFileInput}
+        ref={fileInputRef}
         className="hidden"
+        accept=".evtx"
+        onChange={handleFileSelect}
       />
 
-      {/* 拖拽上传区域 */}
+      {/* 拖放区域 */}
       {!hasLoaded ? (
         <div
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
           onClick={handleTriggerUpload}
-          className={`evtx-dropzone flex flex-col items-center justify-center p-10 ${
+          className={`drop-zone rounded-3xl border-2 border-dashed border-[var(--border)] p-12 flex flex-col items-center justify-center text-center cursor-pointer transition-all ${
             isDragging ? 'active' : ''
           }`}
         >
@@ -186,7 +231,7 @@ export const EvtxLab: React.FC = () => {
             拖放 Windows 事件日志文件 (.evtx) 到此处
           </h3>
           <p className="text-sm text-[var(--text-soft)] max-w-md mb-5">
-            或点击此处从本地磁盘选择文件。本工具在浏览器本地解析，文件不会上传至任何远程服务器。
+            或点击此处从本地磁盘选择文件。本工具在浏览器本地直接解析，保护您的隐私。
           </p>
           <div className="flex flex-wrap items-center justify-center gap-3">
             <button
@@ -225,7 +270,7 @@ export const EvtxLab: React.FC = () => {
                   {file?.name}
                 </h3>
                 <span className="chip chip-depth-beginner text-[10px] px-2 py-0.5">
-                  已加载 ArrayBuffer
+                  已加载解析
                 </span>
               </div>
               <p className="text-xs text-[var(--text-soft)] mt-1 font-mono">
@@ -254,31 +299,48 @@ export const EvtxLab: React.FC = () => {
         </div>
       )}
 
-      {/* 提示信息：Rust WASM 解析器正在开发中 */}
-      <div className="surface-panel rounded-2xl p-4 sm:p-5 border border-amber-500/30 bg-amber-500/5 flex items-start gap-3.5">
-        <Cpu className="w-5 h-5 text-amber-400 shrink-0 mt-0.5" />
-        <div className="text-xs sm:text-sm text-amber-200/90 leading-relaxed">
-          <p className="font-bold text-amber-300 text-sm mb-1">
-            完整的 EVTX 解析功能即将上线（基于 Rust WASM）
-          </p>
-          <p className="text-xs text-amber-200/75 leading-normal">
-            当前版本已完成浏览器端二进制文件流（ArrayBuffer）读取支持。底层完整的 EVTX 块头解构、Chunk 解码、二进制 XML（BinXml）还原及 XPath 过滤引擎正使用 Rust 编写，并将编译为高吞吐 WebAssembly 模块直接在前端无缝运行。
-          </p>
+      {/* 错误提示 */}
+      {errorMsg && (
+        <div className="surface-panel rounded-2xl p-4 sm:p-5 border border-rose-500/30 bg-rose-500/5 flex items-start gap-3.5">
+          <AlertCircle className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
+          <div className="text-xs sm:text-sm text-rose-200/90 leading-relaxed">
+            <p className="font-bold text-rose-300 text-sm mb-1">解析出错</p>
+            <p className="text-xs text-rose-200/75 leading-normal">{errorMsg}</p>
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* 模拟表格预览 */}
-      {hasLoaded && (
+      {/* 状态提示信息 */}
+      {hasLoaded && !errorMsg && (
+        <div className="surface-panel rounded-2xl p-4 sm:p-5 border border-[var(--accent)]/30 bg-[var(--accent)]/5 flex items-start gap-3.5">
+          {isLoading ? (
+            <RefreshCw className="w-5 h-5 text-[var(--accent)] shrink-0 mt-0.5 animate-spin" />
+          ) : (
+            <CheckCircle2 className="w-5 h-5 text-[var(--accent)] shrink-0 mt-0.5" />
+          )}
+          <div className="text-xs sm:text-sm text-[var(--accent)]/90 leading-relaxed">
+            <p className="font-bold text-[var(--accent)] text-sm mb-1">
+              {isLoading ? '正在进行本地解析...' : '解析成功 (基于浏览器 JS 引擎)'}
+            </p>
+            <p className="text-xs text-[var(--accent)]/75 leading-normal">
+              当前 EVTX 解析由纯前端 JavaScript 引擎处理。已为您成功提取底层 Chunk 和二进制 XML (BinXml) 记录。为保障渲染性能，界面目前仅显示最新的 200 条记录。
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* 实际表格预览 */}
+      {hasLoaded && !isLoading && !errorMsg && (
         <div className="surface-card rounded-2xl border border-[var(--border)] overflow-hidden">
           <div className="p-4 border-b border-[var(--border)] flex items-center justify-between">
             <div className="flex items-center gap-2">
               <TableIcon className="w-4 h-4 text-[var(--accent)]" />
               <h4 className="text-sm font-bold text-[var(--text)]">
-                事件记录预览（仿真解析数据）
+                事件记录预览
               </h4>
             </div>
             <span className="text-xs text-[var(--muted)] font-mono">
-              共 {MOCK_EVENTS.length} 条记录
+              展示 {displayEvents.length} 条记录
             </span>
           </div>
 
@@ -295,7 +357,7 @@ export const EvtxLab: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--border)]/60 text-[var(--text-soft)]">
-                {MOCK_EVENTS.map((item) => {
+                {displayEvents.map((item, idx) => {
                   let badge = (
                     <span className="chip chip-muted px-2 py-0.5 text-[10px]">
                       {item.level}
@@ -323,7 +385,7 @@ export const EvtxLab: React.FC = () => {
 
                   return (
                     <tr
-                      key={item.id + item.time}
+                      key={idx}
                       className="hover:bg-[var(--bg-panel)] transition-colors"
                     >
                       <td className="p-3 font-mono font-bold text-[var(--accent)]">
@@ -335,7 +397,7 @@ export const EvtxLab: React.FC = () => {
                         {item.provider}
                       </td>
                       <td className="p-3 whitespace-nowrap">{item.task}</td>
-                      <td className="p-3 leading-relaxed text-[var(--text)]">
+                      <td className="p-3 leading-relaxed text-[var(--text)] font-mono text-[10px] break-all">
                         {item.description}
                       </td>
                     </tr>

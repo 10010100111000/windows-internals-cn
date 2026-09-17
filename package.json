@@ -9,6 +9,8 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "buffer": "^6.0.3",
+    "cheerio": "^1.2.0",
     "fuse.js": "^7.0.0",
     "gray-matter": "^4.0.3",
     "lucide-react": "^0.460.0",
@@ -16,7 +18,9 @@
     "next-mdx-remote": "^6.0.0",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
-    "remark-gfm": "^4.0.1"
+    "remark-gfm": "^4.0.1",
+    "turndown": "^7.2.4",
+    "winevtx": "^0.1.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
