@@ -1,0 +1,101 @@
+---
+title: "虚拟化"
+---
+
+beginner
+
+# 虚拟化
+
+Hypervisor 层、虚拟机，以及 Windows 如何将 guest 从 host 隔离。
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### 虚拟化与 VBS
+
+Hyper-V 分区 (partitions)、启发的 (enlightened) I/O，以及基于虚拟化的安全 (VBS)。
+
+该路径共 3 步，当前第 1 步
+
+[1. 虚拟化](/explore/virtualization?path=virtualization-path)[2. Hyper-V 与分区](/explore/virtualization/hyper-v?path=virtualization-path)[3. VBS, HVCI 与隔离](/explore/virtualization/security?path=virtualization-path)
+
+[跟随此学习路径](/explore/virtualization?path=virtualization-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Hyper-V 技术概览
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/hyper-v-technology-overview)[
+
+Microsoft Learn
+
+Hyper-V 架构
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-server/virtualization/hyper-v/overview)
+
+## 为什么它很重要
+
+Hyper-V、WSL2 以及云工作负载都依赖于硬件虚拟化和 Windows hypervisor 栈。
+
+## 思维模型
+
+Hypervisor 位于 OS 内核之下（或将其分离）。Guests 认为它们拥有硬件；host 则是复用 CPU、内存和设备。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   ServiceHyper-V Host Compute Service
+    
+    在客户端 SKU 上管理 VM 生命周期
+    
+*   Filevmcompute.exe / vmwp.exe
+    
+    用于 VM 的工作进程
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   Enlightened guests 使用合成 (synthetic) 的网卡/存储；仿真设备 (emulated devices) 为了兼容性而存在。
+*   即使你没有运行传统的 VM 桌面，VBS 也会使用 hypervisor。
+
+## 工作原理
+
+1.  1CPU 虚拟化扩展让 hypervisor 能够捕获敏感操作。
+2.  2根分区 (root partition) 运行管理 OS；子分区 (child partitions) 运行 guests。
+3.  3合成设备 (VMBus) 避免了仿真每个硬件细节。
+
+## 关键术语
+
+Hypervisor
+
+负责调度虚拟 CPU 并隔离 guest 内存的软件层。
+
+Partition
+
+由 Hyper-V 管理的隔离执行环境。
+
+VMBus
+
+Hyper-V guest 和 host 服务之间的高速通道。
+
+## WSL2 是一个轻量级 VM
+
+WSL2 在 Hyper-V 基础设施上运行一个 Linux guest，同时与 Windows 桌面体验相结合。
+
+## 常见误区
+
+虚拟化和容器 (containers) 并不等同。容器共享同一个内核；而 VM 运行独立的内核。

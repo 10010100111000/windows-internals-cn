@@ -1,0 +1,101 @@
+---
+title: "可执行文件加载与运行时"
+---
+
+beginner
+
+# 可执行文件加载与运行时
+
+PE 镜像、DLL 加载、运行时数据结构，以及如 WOW64 这样的兼容层。
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### 加载器与运行时
+
+PE 镜像、DLL 加载，以及 64 位 Windows 上的 WOW64。
+
+该路径共 5 步，当前第 1 步
+
+[1. 可执行文件加载与运行时](/explore/loader?path=loader-path)[2. PE 格式](/explore/loader/pe?path=loader-path)[3. DLL loader, PEB 与 module lists](/explore/loader/dll-loader?path=loader-path)[4. WOW64 与跨架构兼容性](/explore/loader/wow64?path=loader-path)[5. Ntdll 与用户/内核边界](/explore/processes/ntdll?path=loader-path)
+
+[跟随此学习路径](/explore/loader?path=loader-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+PE 格式
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/debug/pe-format)[
+
+Microsoft Learn
+
+Dynamic-link library search order
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/dlls/dynamic-link-library-search-order)
+
+## 为什么它很重要
+
+这是“一个进程存在”和“一个 Windows 程序实际开始运行”之间的桥梁。它解释了什么被映射、重定位、链接以及被跟踪。
+
+## 思维模型
+
+Windows 并不运行源文件或原始字节。它加载结构化镜像，将区段 (sections) 映射入内存，解析导入表 (imports)，并为进程及其线程构建运行时元数据。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Filekernel32.dll
+    
+    Win32 loader helpers (CreateProcess)
+    
+*   Filentdll.dll
+    
+    Ldr* 原生加载器例程
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   Known DLLs 和 SxS 清单解析器会影响加载的 DLL 版本。
+*   ASLR、DEP 和 CFG 是使用 PE 标志和策略来强制执行的。
+
+## 工作原理
+
+1.  1可执行镜像根据 PE 格式被解析并映射进虚拟内存。
+2.  2加载器解析 imports，在需要时应用重定位，并引入依赖的 DLLs。
+3.  3如 PEB、TEB 和 module lists 等运行时结构帮助进程和工具理解它的执行状态。
+
+## 关键术语
+
+PE
+
+Portable Executable，Windows 可执行文件和 DLLs 所使用的镜像格式。
+
+Import
+
+对另一个模块导出的符号的依赖。
+
+PEB
+
+Process Environment Block，在用户模式下维护的运行时进程元数据。
+
+## 双击一个应用
+
+看似瞬间发生的事，实际上是在你代码进行有用的工作之前，经历了一系列镜像映射、依赖加载、初始化和运行时结构设置的序列。
+
+## 常见误区
+
+进程不仅仅是内存中的一个 EXE。它是一个填满了镜像、堆、栈、模块元数据以及运行时支持结构的地址空间。

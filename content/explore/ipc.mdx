@@ -1,0 +1,67 @@
+---
+title: "IPC 与组件边界"
+---
+
+beginner
+
+# IPC 与组件边界
+
+Windows 组件如何跨越进程边界使用本地 RPC、命名管道 (named pipes) 及其他消息通道进行通信。
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+选择协议序列
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/rpc/selecting-a-protocol-sequence)[
+
+Microsoft Learn
+
+Named pipes
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/ipc/named-pipes)
+
+## 为什么它很重要
+
+Windows 是由众多相互协作的进程构建而成的。如果不理解 IPC，系统看起来就像是一个个孤立的盒子，其间充斥着神奇的箭头。
+
+## 思维模型
+
+IPC 是组件之间的契约层。一个进程暴露功能或数据，另一个进程通过一个中介通道来访问它，而不是直接去触碰它的内存。
+
+## 工作原理
+
+1.  1Windows 组件暴露如 ports、RPC 接口或 named pipes 这样的 endpoints。
+2.  2客户端使用为本地或远程通信设计的协议连接到这些 endpoints。
+3.  3安全描述符和 tokens 仍然适用，因此 IPC 不仅仅是消息传递，它也是一个策略边界。
+
+## 关键术语
+
+IPC
+
+Inter-process communication（进程间通信），运行在分开的进程中的组件之间的通信。
+
+Endpoint
+
+客户端可以连接的一个已命名或注册的通信点。
+
+RPC
+
+Remote Procedure Call（远程过程调用），在另一进程或机器上调用功能的框架。
+
+## 一个为桌面应用提供数据的服务
+
+应用程序通常不读取服务的内存。它调用 IPC 机制并通过受支持的边界接收结构化的响应。
+
+## 常见误区
+
+IPC 并不是一个边缘子系统。它是 Windows 组件保持隔离同时仍然合作的默认方式之一。

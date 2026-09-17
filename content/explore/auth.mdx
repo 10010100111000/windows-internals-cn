@@ -1,0 +1,97 @@
+---
+title: "身份验证与登录"
+---
+
+beginner
+
+# 身份验证与登录
+
+Windows 如何将凭据转化为经过验证的会话、安全上下文以及可用的 access tokens。
+
+## 本分支中的引导学习路径
+
+按顺序跟随简短学习序列。每条路径链接到第一个主题；在每个页面使用「继续阅读」来往下学习。
+
+### 身份验证路径
+
+从 Winlogon 到 LSASS，再到 Kerberos/NTLM 和加密管道。
+
+该路径共 6 步，当前第 1 步
+
+[1. 身份验证与登录](/explore/auth?path=auth-path)[2. Winlogon, LogonUI 与会话登录](/explore/auth/logon-flow?path=auth-path)[3. LSASS, SAM 与本地安全策略](/explore/auth/lsass-sam?path=auth-path)[4. Kerberos, NTLM 与 Authentication packages](/explore/auth/kerberos-ntlm?path=auth-path)[5. CNG, Schannel & 加密管道](/explore/auth/cryptography?path=auth-path)[6. Access tokens](/explore/security/token?path=auth-path)
+
+[跟随此学习路径](/explore/auth?path=auth-path)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Windows 身份验证架构
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-server/security/windows-authentication/windows-authentication-architecture)[
+
+Microsoft Learn
+
+Windows 身份验证中的凭据过程
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-server/security/windows-authentication/credentials-processes-in-windows-authentication)
+
+## 为什么它很重要
+
+身份验证是身份进入系统的地方。它解释了为什么存在 tokens，为什么 LSASS 如此重要，以及为什么日志和会话能够反映特定的用户和服务。
+
+## 思维模型
+
+登录是一个流水线：收集凭据，Authentication package 验证凭据，Windows 创建登录会话，随后生成的安全上下文变为了一个 token。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Processlsass.exe
+    
+    承载 LSA 和 authentication packages
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   当启用时，Credential Guard 会将密钥移至一个隔离的 VTL 中。
+*   CloudAP 及其他包扩展了 AAD/Windows Hello 的流程。
+
+## 工作原理
+
+1.  1Winlogon 和相关的 UI 组件收集或代理凭据。
+2.  2LSASS 选择或托管诸如 Kerberos 或 NTLM 这样的 authentication packages。
+3.  3验证成功后，Windows 创建以后被进程和线程使用的登录状态和 tokens。
+
+## 关键术语
+
+LSASS
+
+Local Security Authority Subsystem Service，执行本地安全策略和身份验证的受保护进程。
+
+SAM
+
+Security Accounts Manager，用于机器本地身份的本地账户数据库。
+
+Authentication package
+
+用于验证身份的协议或提供程序，如 Kerberos 或 NTLM。
+
+## 登录并稍后打开网络共享
+
+初始登录生成了安全上下文和缓存的凭据材料，这使得之后 Windows 访问资源时无需每次都询问密码。
+
+## 常见误区
+
+身份验证 (Authentication) 与授权 (Authorization) 并不等同。登录证明了身份；之后的访问检查 (access checks) 才会决定该身份实际能够做什么。

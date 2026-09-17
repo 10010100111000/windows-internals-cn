@@ -1,0 +1,85 @@
+---
+title: "注册表与配置"
+---
+
+beginner
+
+# 注册表与配置
+
+Windows 如何在分层的 hives 中存储系统和应用程序配置。
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+注册表 Hives
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/sysinfo/registry-hives)[
+
+Microsoft Learn
+
+面向高级用户的 Windows 注册表
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/troubleshoot/windows-server/performance/windows-registry-advanced-users)
+
+## 为什么它很重要
+
+注册表是 Windows 的配置主干。启动设置、服务定义、驱动程序参数以及无数的应用程序设置都存放在这里。
+
+## 思维模型
+
+把注册表想作是一个分成 hives、keys 和 values 的结构化配置数据库，而不是一个扁平的文本文件。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   FileSYSTEM, SOFTWARE, SAM, SECURITY
+    
+    %SystemRoot%\System32\config
+    
+    磁盘上的 hive 文件
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   HKLM\SYSTEM\CurrentControlSet 存放着服务、控制集 (Control sets) 和驱动程序配置。
+*   事务日志 (.LOG) 可以在写入期间发生崩溃时保护 hive 的一致性。
+
+## 工作原理
+
+1.  1Hives 支撑配置数据的持久化存储。
+2.  2Keys 将数据进行分层组织，而 values 保存类型化内容。
+3.  3内核和用户模式组件通过注册表 APIs 读写这些结构。
+
+## 关键术语
+
+Hive
+
+顶层的注册表数据存储，由文件和内存结构支撑。
+
+Key
+
+注册表层次结构中的容器节点。
+
+Value
+
+存放在 key 下方的命名的类型化数据块。
+
+## 服务启动定义存放在哪里
+
+Service Control Manager 从注册表位置读取服务配置，而不是从一个单独的仅针对服务的数据库读取。
+
+## 常见误区
+
+注册表并不是一个巨大的内存块。它被分割为具有自身加载和持久化行为的 hives。

@@ -1,0 +1,117 @@
+---
+title: "诊断与日志"
+---
+
+beginnerStart Here Step 4
+
+# 诊断与日志
+
+Windows 在何处记录发生了什么：Event Log、ETW 以及面向崩溃的线索。
+
+## 相关实验
+
+该领域的动手练习 — 在浏览器中或在 Windows 机器上。
+
+[
+
+EVTX 实验
+
+在浏览器中使用 Rust WASM 解析器加载和探索 Windows Event Log 文件。
+
+打开实验](/tools/evtx)
+
+[查看所有实验](/tools)
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Windows Event Log
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/api/_wes/)[
+
+Microsoft Learn
+
+使用 ETW 埋点你的代码
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-hardware/test/weg/instrumenting-your-code-with-etw)[
+
+Microsoft Learn
+
+将事件跟踪添加到内核模式驱动程序中
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows-hardware/drivers/devtest/adding-event-tracing-to-kernel-mode-drivers)
+
+## 为什么它很重要
+
+了解遥测数据从何而来，可以让初学者从“Windows 表现得很奇怪”转变为“我可以检查证据并解释发生了什么”。
+
+## 思维模型
+
+Windows 为不同的目标发出不同种类的跟踪：历史记录的持久化日志、高吞吐量跟踪的 ETW，以及故障时的转储文件。
+
+## 示意图
+
+点击高亮区域了解该层级并深入阅读相关内容。
+
+Event log pipelineProviderPublisher APIEvent Log svc.evtx fileWASM parser
+
+Provider
+
+Windows 组件发出包含字段和元数据的结构化事件。
+
+[打开相关主题](/explore/diagnostics/event-log/providers)
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   ServiceWindows Event Log
+    
+    持久化 EVTX 通道 (channels)
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   ETW 是高吞吐量且通常在内存中的；Event Log 是持久化的并以 channel 为导向。
+*   许多 providers 会发出具有不同保留期的 ETW 和 Event Log 记录。
+
+## 工作原理
+
+1.  1Providers 发布带有元数据的结构化事件。
+2.  2Event Log 服务将选定的事件持久化存储在特定于 channel 的 .evtx 文件中。
+3.  3ETW 会话也能流式传输详细的高吞吐量跟踪用于实时诊断。
+
+## 关键术语
+
+Provider
+
+发出 Windows 事件或跟踪数据的组件。
+
+Channel
+
+逻辑的事件日志目标，例如 Application, Security, 或 System。
+
+EVTX
+
+Windows Event Log 服务使用的文件格式。
+
+## 排除登录失败或驱动问题
+
+你通常可以从 Event Log 开始以获取持久化的历史记录，当你需要高分辨率追踪时，再转用 ETW。
+
+## 常见误区
+
+Event Log 和 ETW 是相关但不相同的。Event Log 存储选定的记录；ETW 则是一个更宽泛的追踪管道。

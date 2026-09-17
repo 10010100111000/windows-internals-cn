@@ -1,0 +1,87 @@
+---
+title: "服务与后台基础设施"
+---
+
+beginner
+
+# 服务与后台基础设施
+
+Windows 如何启动、分组、隔离以及监督长时间运行的后台组件。
+
+## Microsoft 官方文档
+
+Microsoft Learn 上与此主题最相关的官方参考资料。
+
+[
+
+Microsoft Learn
+
+Service control manager
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/services/service-control-manager)[
+
+Microsoft Learn
+
+Windows Vista 的服务变更
+
+learn.microsoft.com
+
+](https://learn.microsoft.com/en-us/windows/win32/services/service-changes-for-windows-vista)
+
+## 为什么它很重要
+
+Windows 的大量功能都独立于桌面 shell 之外。服务承载了网络、日志、更新、安全功能以及后台管理任务。
+
+## 思维模型
+
+一个服务就是一个被管理的长时间运行的工作负载。Service Control Manager 决定它何时启动、如何停止以及在何种身份下运行。
+
+## Windows 基础组件
+
+可在任务管理器、资源管理器或者文档中查到的名称与路径。
+
+*   Processservices.exe
+    
+    Service Control Manager 进程
+    
+*   ServiceService Control Manager
+    
+    启动并控制 Windows 服务
+    
+
+## 深入一层
+
+给希望在打开子主题前获取更精确信息的读者提供额外细节。
+
+*   根据配置，服务可以作为共享 (svchost)、独立运行，或在用户会话中运行。
+*   失败操作（重启、重启计算机）在 SCM 数据库中按服务进行配置。
+
+## 工作原理
+
+1.  1Service Control Manager 读取配置并按正确的顺序启动服务。
+2.  2服务通常运行在像 svchost.exe 这样的共享主机进程内。
+3.  3每个服务都有一个生命周期、恢复策略、安全上下文以及依赖链。
+
+## 关键术语
+
+SCM
+
+Service Control Manager；Windows 中的中央服务编排器。
+
+svchost
+
+一个共享主机进程，可以运行一个或多个 Windows 服务。
+
+Session 0
+
+服务运行的隔离会话，与交互式桌面会话分离。
+
+## 为什么许多服务显示在一个进程下
+
+Windows 将兼容的服务分组到共享主机中，以减少开销并简化生命周期管理。
+
+## 常见误区
+
+服务不仅仅是“一个没有窗口的应用程序”。它由专门的操作系统基础设施进行管理，拥有不同的身份和生命周期规则。
